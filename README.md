@@ -1,2 +1,24 @@
-# M_drive_cleanup
-A tool to cleanup a shared folder based on file size, date, last accessed and potential other criteria.
+# M Drive Cleanup Tool
+
+A GUI-based Python application to scan and optionally archive old or unused image files on a shared M: drive.
+
+## 🔧 Features
+- ✅ Tkinter-based interface
+- ✅ Filters by file size, type, and age
+- ✅ Preview scan results
+- ✅ Optional "Move files" mode with safe test option
+- ✅ CSV export of scan results
+
+## 🛠 How to Run
+1. Install Python 3.10+
+2. Create a virtual environment and install requirements: pip install -r requirements.txt
+3. Run the tool: python cleanup_tool.py
+
+   
+## 🚀 Coming Soon
+- Progress bar
+- Logging system
+- `.exe` packaging for Windows
+
+
+
