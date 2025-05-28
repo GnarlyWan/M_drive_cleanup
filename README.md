@@ -17,6 +17,8 @@ A GUI-based Python application to scan and optionally archive old or unused imag
    
 ## 🚀 Coming Soon
 - Progress bar
+- Clarification and examples of file size (KB->MB->GB) and type
+- Improved UI
 - Logging system
 - `.exe` packaging for Windows
 
