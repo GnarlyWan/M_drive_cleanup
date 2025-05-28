@@ -1,6 +1,6 @@
 import tkinter as tk
 import tkinter.font as tkFont
-from tkinter import filedialog, messagebox
+from tkinter import filedialog, ttk
 from core import run_scan  # You'll define this wrapper in core.py
 from config import EXTENSIONS, MIN_SIZE_MB, OLDER_THAN_DAYS, REVIEW_FOLDER, TEST_MODE
 
@@ -47,8 +47,17 @@ def build_gui():
 
     tk.Button(root, text="Run Scan", bg="purple", command=lambda: run_scan(
         folder_entry, ext_entry, size_entry, days_entry,
-        move_var, test_mode_var, root, preview_results)).grid(
+        move_var, test_mode_var, root, preview_results, progress_var, progress_label_var)).grid(
         row=7, column=0, columnspan=3, pady=10)
+
+    # Progress Bar
+    progress_var = tk.DoubleVar()
+    progress_bar = ttk.Progressbar(root, variable=progress_var, maximum=100, length=300)
+    progress_bar.grid(row=8, column=0, columnspan=3, pady=(0, 10))
+
+    progress_label_var = tk.StringVar()
+    progress_label = tk.Label(root, textvariable=progress_label_var, fg="gray")
+    progress_label.grid(row=9, column=0, columnspan=3, pady=(0, 10))
 
     root.mainloop()
 
