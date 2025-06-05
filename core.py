@@ -6,9 +6,7 @@ from datetime import datetime, timedelta
 from tkinter import messagebox
 from config import EXTENSIONS, MIN_SIZE_MB, OLDER_THAN_DAYS, REVIEW_FOLDER, TEST_MODE
 
-
-
-def run_scan(folder_entry, ext_entry, size_entry, days_entry, move_var, test_mode_var, root, preview_callback, progress_var, progress_label_var):
+def run_scan(folder_entry, ext_entry, size_entry, days_entry, move_var, test_mode_var, root, preview_callback, progress_var, progress_label_var, filter_by="accessed"):
     def threaded_scan():
         folder = folder_entry.get()
         extensions = [e.strip() for e in ext_entry.get().split(",")]
@@ -25,10 +23,10 @@ def run_scan(folder_entry, ext_entry, size_entry, days_entry, move_var, test_mod
         try:
             output_file, total_size, matched_results = scan_and_export(
                 folder, extensions, min_size_mb, older_than_days,
-                move_files=move_files, test_mode=test_mode, progress_var=progress_var, progress_label_var=progress_label_var
+                move_files=move_files, test_mode=test_mode, progress_var=progress_var,
+                root=root, progress_label_var=progress_label_var, filter_by=filter_by
             )
 
-            # Use callback to update results in GUI
             root.after(0, lambda: [
                 preview_callback(matched_results, root),
                 messagebox.showinfo(
@@ -41,10 +39,9 @@ def run_scan(folder_entry, ext_entry, size_entry, days_entry, move_var, test_mod
 
     threading.Thread(target=threaded_scan, daemon=True).start()
 
-
-
 def scan_and_export(folder, extensions, min_size_mb, older_than_days,
-                    move_files=False, test_mode=True, progress_var=None, root=None, progress_label_var=None):
+                    move_files=False, test_mode=True, progress_var=None,
+                    root=None, progress_label_var=None, filter_by="accessed"):
     min_size_bytes = min_size_mb * 1024 * 1024
     cutoff_date = datetime.now() - timedelta(days=older_than_days)
     results = []
@@ -68,19 +65,25 @@ def scan_and_export(folder, extensions, min_size_mb, older_than_days,
             created = datetime.fromtimestamp(os.path.getctime(file_path))
             accessed = datetime.fromtimestamp(os.path.getatime(file_path))
 
-            if size >= min_size_bytes and modified < cutoff_date:
+            reference_date = {
+                "modified": modified,
+                "created": created,
+                "accessed": accessed
+            }.get(filter_by, accessed)
+
+            if size >= min_size_bytes and reference_date < cutoff_date:
                 results.append([
                     file_path,
                     round(size / (1024 * 1024), 2),
                     modified.strftime("%Y-%m-%d %H:%M"),
                     created.strftime("%Y-%m-%d %H:%M"),
-                    accessed.strftime("%Y-%m-%d %H:%M")
+                    accessed.strftime("%Y-%m-%d %H:%M"),
+                    filter_by.capitalize()
                 ])
                 total_bytes += size
 
                 if move_files:
                     move_file(file_path, folder, test_mode)
-
 
         except Exception as e:
             error_msg = str(e)
@@ -89,7 +92,6 @@ def scan_and_export(folder, extensions, min_size_mb, older_than_days,
             else:
                 print(f"Scan Error: {error_msg}")
 
-        # ⏳ Update the progress bar
         processed += 1
         if progress_var:
             progress = (processed / total_files) * 100
@@ -98,12 +100,10 @@ def scan_and_export(folder, extensions, min_size_mb, older_than_days,
                 percent = int((processed / total_files) * 100)
                 progress_label_var.set(f"Scanning {processed} of {total_files} files ({percent}%)")
 
-
-    # Export to CSV
     output_file = os.path.join(folder, "cleanup_results.csv")
     with open(output_file, "w", newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
-        writer.writerow(["File Path", "Size (MB)", "Last Modified", "Created", "Last Accessed"])
+        writer.writerow(["File Path", "Size (MB)", "Last Modified", "Created", "Last Accessed", "Filtered By"])
         writer.writerows(results)
 
     if progress_var:
@@ -113,7 +113,6 @@ def scan_and_export(folder, extensions, min_size_mb, older_than_days,
         progress_label_var.set("Scan complete.")
 
     return output_file, round(total_bytes / (1024 * 1024), 2), results
-
 
 def move_file(file_path, folder, test_mode):
     review_root = "M:/MDriveCleanup/flagged_files"
