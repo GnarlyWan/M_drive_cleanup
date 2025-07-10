@@ -42,10 +42,13 @@ def run_scan(folder_entry, ext_entry, size_entry, days_entry, move_var, test_mod
             ])
 
         except Exception as e:
-            root.after(0, lambda: [
-                stop_animation() if stop_animation else None,
-                messagebox.showerror("Scan Error", f"An unexpected error occurred:\n\n{str(e)}")
-            ])
+except Exception as e:
+    error_msg = str(e)
+    root.after(0, lambda msg=error_msg: [
+        stop_animation() if stop_animation else None,
+        messagebox.showerror("Scan Error", f"An unexpected error occurred:\n\n{msg}")
+    ])
+
 
     threading.Thread(target=threaded_scan, daemon=True).start()
 
