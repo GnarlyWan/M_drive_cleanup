@@ -4,7 +4,7 @@ A GUI-based Python application to scan and optionally archive old or unused imag
 
 ## 🔧 Features
 - ✅ Tkinter-based interface
-- ✅ Filters by file size, type, and age
+- ✅ Filters by file size, type, and age (choose last accessed or last modified)
 - ✅ Preview scan results
 - ✅ Optional "Move files" mode with safe test option
 - ✅ CSV export of scan results
