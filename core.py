@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from tkinter import messagebox
 from config import EXTENSIONS, MIN_SIZE_MB, OLDER_THAN_DAYS, REVIEW_FOLDER, TEST_MODE
 
-def run_scan(folder_entry, ext_entry, size_entry, days_entry, move_var, test_mode_var, root, preview_callback, progress_var, progress_label_var, filter_by="accessed"):
+def run_scan(folder_entry, ext_entry, size_entry, days_entry, move_var, test_mode_var, root, preview_callback, progress_var, progress_label_var, filter_by="accessed", stop_animation=None):
     def threaded_scan():
         folder = folder_entry.get()
         extensions = [e.strip() for e in ext_entry.get().split(",")]
@@ -17,31 +17,43 @@ def run_scan(folder_entry, ext_entry, size_entry, days_entry, move_var, test_mod
             min_size_mb = float(size_entry.get())
             older_than_days = int(days_entry.get())
         except ValueError:
-            messagebox.showerror("Invalid Input", "Please enter numeric values for size and days.")
+            if stop_animation:
+                root.after(0, stop_animation)
+            root.after(0, lambda: messagebox.showerror(
+                "Invalid Input",
+                "Please enter numeric values for size and days."
+            ))
             return
 
         try:
             output_file, total_size, matched_results = scan_and_export(
                 folder, extensions, min_size_mb, older_than_days,
                 move_files=move_files, test_mode=test_mode, progress_var=progress_var,
-                root=root, progress_label_var=progress_label_var, filter_by=filter_by
+                root=root, progress_label_var=progress_label_var, filter_by=filter_by,
+                stop_animation=stop_animation
             )
 
             root.after(0, lambda: [
                 preview_callback(matched_results, root),
                 messagebox.showinfo(
                     "Scan Complete",
-                    f"Results saved to: {output_file}\nTotal matched size: {total_size:.2f} MB")
+                    f"Results saved to: {output_file}\nTotal matched size: {total_size:.2f} MB"),
+                stop_animation() if stop_animation else None
             ])
 
         except Exception as e:
-            root.after(0, lambda: messagebox.showerror("Scan Error", f"An unexpected error occurred:\n\n{str(e)}"))
+            error_msg = str(e)
+            root.after(0, lambda msg=error_msg: [
+                stop_animation() if stop_animation else None,
+                messagebox.showerror("Scan Error", f"An unexpected error occurred:\n\n{msg}")
+            ])
 
     threading.Thread(target=threaded_scan, daemon=True).start()
 
 def scan_and_export(folder, extensions, min_size_mb, older_than_days,
                     move_files=False, test_mode=True, progress_var=None,
-                    root=None, progress_label_var=None, filter_by="accessed"):
+                    root=None, progress_label_var=None, filter_by="accessed",
+                    stop_animation=None):
     min_size_bytes = min_size_mb * 1024 * 1024
     cutoff_date = datetime.now() - timedelta(days=older_than_days)
     results = []
@@ -53,6 +65,8 @@ def scan_and_export(folder, extensions, min_size_mb, older_than_days,
             all_files.append(os.path.join(root_dir, file))
 
     total_files = len(all_files)
+    if stop_animation:
+        root.after(0, stop_animation)
     processed = 0
 
     for file_path in all_files:
