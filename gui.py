@@ -61,15 +61,40 @@ def build_gui():
 
     FILTER_OPTIONS = {"Last Accessed": "accessed", "Last Modified": "modified"}
 
+    animation_running = False
+
+    def start_progress_animation():
+        nonlocal animation_running
+        animation_running = True
+        progress_bar.config(mode="indeterminate")
+        progress_bar.start(10)
+
+        def animate(count=0):
+            if not animation_running:
+                return
+            dots = "." * (count % 4)
+            progress_label_var.set(f"Scanning{dots}")
+            root.after(500, lambda: animate(count + 1))
+
+        animate()
+
+    def stop_progress_animation():
+        nonlocal animation_running
+        animation_running = False
+        progress_bar.stop()
+        progress_bar.config(mode="determinate")
+
     def start_scan():
         days = calculate_days()
         selected_filter = FILTER_OPTIONS.get(filter_var.get(), "accessed")
+        start_progress_animation()
         run_scan(
             folder_entry, ext_entry, size_entry,
             tk.StringVar(value=str(days)),  # simulate entry-like object for days
             move_var, test_mode_var, root,
             preview_results, progress_var, progress_label_var,
-            filter_by=selected_filter
+            filter_by=selected_filter,
+            stop_animation=stop_progress_animation
         )
 
     test_mode_var.trace_add("write", lambda *args: toggle_move_checkbox(move_checkbox, test_mode_var))
