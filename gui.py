@@ -2,7 +2,7 @@ import tkinter as tk
 import tkinter.font as tkFont
 from tkinter import filedialog, ttk, messagebox
 from core import run_scan
-from config import EXTENSIONS, MIN_SIZE_MB, OLDER_THAN_DAYS, REVIEW_FOLDER, TEST_MODE
+from config import EXTENSIONS, MIN_SIZE_MB, OLDER_THAN_DAYS, REVIEW_FOLDER, TEST_MODE, DEFAULT_FILTER
 
 class CreateToolTip:
     def __init__(self, widget, text):
@@ -59,14 +59,17 @@ def build_gui():
             messagebox.showerror("Invalid Input", "Please enter valid numbers for years, months, and weeks.")
             return OLDER_THAN_DAYS
 
+    FILTER_OPTIONS = {"Last Accessed": "accessed", "Last Modified": "modified"}
+
     def start_scan():
         days = calculate_days()
+        selected_filter = FILTER_OPTIONS.get(filter_var.get(), "accessed")
         run_scan(
             folder_entry, ext_entry, size_entry,
             tk.StringVar(value=str(days)),  # simulate entry-like object for days
             move_var, test_mode_var, root,
             preview_results, progress_var, progress_label_var,
-            filter_by="accessed"  # Set main filter to "Last Accessed"
+            filter_by=selected_filter
         )
 
     test_mode_var.trace_add("write", lambda *args: toggle_move_checkbox(move_checkbox, test_mode_var))
@@ -107,28 +110,33 @@ def build_gui():
     tk.Label(root, text="Months").grid(row=4, column=1)
     tk.Label(root, text="Weeks").grid(row=4, column=1, sticky="e")
 
+    tk.Label(root, text="Filter By:").grid(row=5, column=0, sticky="e")
+    default_label = next((k for k, v in FILTER_OPTIONS.items() if v == DEFAULT_FILTER), "Last Accessed")
+    filter_var = tk.StringVar(value=default_label)
+    tk.OptionMenu(root, filter_var, *FILTER_OPTIONS.keys()).grid(row=5, column=1, sticky="w")
+
     move_var = tk.BooleanVar()
     move_checkbox = tk.Checkbutton(root, text="Move files instead of just listing", variable=move_var)
-    move_checkbox.grid(row=5, column=0, columnspan=3, pady=(5, 10))
+    move_checkbox.grid(row=6, column=0, columnspan=3, pady=(5, 10))
 
     bold_red_font = tkFont.Font(weight="bold")
     test_checkbox = tk.Checkbutton(root, text="Test mode (simulate moves only)",
                                    variable=test_mode_var, fg="red", font=bold_red_font)
-    test_checkbox.grid(row=6, column=0, columnspan=3)
+    test_checkbox.grid(row=7, column=0, columnspan=3)
 
     tk.Label(root, text="(Test mode is safe: no files will actually be moved)", fg="gray").grid(
-        row=7, column=0, columnspan=3, pady=(0, 10))
+        row=8, column=0, columnspan=3, pady=(0, 10))
 
     tk.Button(root, text="Run Scan", bg="purple", command=start_scan).grid(
-        row=8, column=0, columnspan=3, pady=10)
+        row=9, column=0, columnspan=3, pady=10)
 
     progress_var = tk.DoubleVar()
     progress_bar = ttk.Progressbar(root, variable=progress_var, maximum=100, length=300)
-    progress_bar.grid(row=9, column=0, columnspan=3, pady=(0, 10))
+    progress_bar.grid(row=10, column=0, columnspan=3, pady=(0, 10))
 
     progress_label_var = tk.StringVar()
     progress_label = tk.Label(root, textvariable=progress_label_var, fg="gray")
-    progress_label.grid(row=10, column=0, columnspan=3, pady=(0, 10))
+    progress_label.grid(row=11, column=0, columnspan=3, pady=(0, 10))
 
     root.mainloop()
 

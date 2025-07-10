@@ -10,9 +10,9 @@ EXTENSIONS = [
 MIN_SIZE_MB = 0.1  # Only include files larger than this size (MB)
 OLDER_THAN_DAYS = 365 * 2  # Only include files not accessed in the last 2 years
 
-# === Time Filter Flags ===
-FILTER_CREATED = False
-FILTER_ACCESSED = True  # Use last accessed date as primary filter
+# === Date Filter Settings ===
+# Options: "accessed" or "modified"
+DEFAULT_FILTER = "accessed"
 
 # === Paths ===
 SCAN_ROOT = "M:/Department/"
