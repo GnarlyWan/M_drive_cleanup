@@ -12,13 +12,11 @@ A GUI-based Python application to scan and optionally archive old or unused imag
 ## 🛠 How to Run
 1. Install Python 3.10+
 2. Create a virtual environment and install requirements: pip install -r requirements.txt
-3. Run the tool: python cleanup_tool.py
+3. Run the tool: python main.py
 
    
 ## 🚀 Coming Soon
 - Clarification and examples of file size (KB->MB->GB) and type
-- Improved UI
-- Logging system
 - `.exe` packaging for Windows
 
 
