@@ -3,7 +3,7 @@
 A GUI-based Python application to scan and optionally archive old or unused image files on a shared M: drive.
 
 ## 🔧 Features
-- ✅ Tkinter-based interface
+- ✅ Modern interface powered by **ttkbootstrap** ("pulse" theme)
 - ✅ Filters by file size, type, and age (choose last accessed or last modified)
 - ✅ Preview scan results
 - ✅ Optional "Move files" mode with safe test option
@@ -16,7 +16,6 @@ A GUI-based Python application to scan and optionally archive old or unused imag
 
    
 ## 🚀 Coming Soon
-- Progress bar
 - Clarification and examples of file size (KB->MB->GB) and type
 - Improved UI
 - Logging system
